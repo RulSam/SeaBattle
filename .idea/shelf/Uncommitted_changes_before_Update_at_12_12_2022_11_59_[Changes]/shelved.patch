@@ -1,0 +1,181 @@
+Index: sketch.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>class Dot:\r\n    def __init__(self, x, y):\r\n        self.x = x\r\n        self.y = y\r\n\r\n    def __eq__(self, other):\r\n        return self.x == other.x and self.y == other.y\r\n\r\n    def __repr__(self):\r\n        return f\"({self.x}, {self.y})\"\r\n\r\n\r\nclass Ship:\r\n    def __init__(self, bow, l, o):\r\n        self.bow = bow\r\n        self.l = l\r\n        self.o = o\r\n        self.lives = l\r\n\r\n    @property\r\n    def dots(self):\r\n        ship_dots = []\r\n        for i in range(self.l):\r\n            cur_x = self.bow.x\r\n            cur_y = self.bow.y\r\n\r\n            if self.o == 0:\r\n                cur_x += i\r\n\r\n            elif self.o == 1:\r\n                cur_y += i\r\n\r\n            ship_dots.append(Dot(cur_x, cur_y))\r\n\r\n        return ship_dots\r\n\r\n    def shooten(self, shot):\r\n        return shot in self.dots\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/sketch.py b/sketch.py
+--- a/sketch.py	(revision b5f4abd9b8a52def9325f6efe1f509ac3bdf5356)
++++ b/sketch.py	(date 1670828373874)
+@@ -37,3 +37,83 @@
+     def shooten(self, shot):
+         return shot in self.dots
+ 
++
++class Board:
++    def __init__(self, hid=False, size=6):
++        self.size = size
++        self.hid = hid
++
++        self.count = 0
++
++        self.field = [["O"] * size for _ in range(size)]
++
++        self.busy = []
++        self.ships = []
++
++    def add_ship(self, ship):
++
++        for d in ship.dots:
++            if self.out(d) or d in self.busy:
++                raise BoardWrongShipException()
++        for d in ship.dots:
++            self.field[d.x][d.y] = "■"
++            self.busy.append(d)
++
++        self.ships.append(ship)
++        self.contour(ship)
++
++    def contour(self, ship, verb=False):
++        near = [
++            (-1, -1), (-1, 0), (-1, 1),
++            (0, -1), (0, 0), (0, 1),
++            (1, -1), (1, 0), (1, 1)
++        ]
++        for d in ship.dots:
++            for dx, dy in near:
++                cur = Dot(d.x + dx, d.y + dy)
++                if not (self.out(cur)) and cur not in self.busy:
++                    if verb:
++                        self.field[cur.x][cur.y] = "."
++                    self.busy.append(cur)
++
++    def __str__(self):
++        res = ""
++        res += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
++        for i, row in enumerate(self.field):
++            res += f"\n{i + 1} | " + " | ".join(row) + " |"
++
++        if self.hid:
++            res = res.replace("■", "O")
++        return res
++
++    def out(self, d):
++        return not ((0 <= d.x < self.size) and (0 <= d.y < self.size))
++
++    def shot(self, d):
++        if self.out(d):
++            raise BoardOutException()
++
++        if d in self.busy:
++            raise BoardUsedException()
++
++        self.busy.append(d)
++
++        for ship in self.ships:
++            if d in ship.dots:
++                ship.lives -= 1
++                self.field[d.x][d.y] = "X"
++                if ship.lives == 0:
++                    self.count += 1
++                    self.contour(ship, verb=True)
++                    print("Корабль уничтожен!")
++                    return False
++                else:
++                    print("Корабль ранен!")
++                    return True
++
++        self.field[d.x][d.y] = "."
++        print("Мимо!")
++        return False
++
++    def begin(self):
++        self.busy = []
+\ No newline at end of file
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
++++ /dev/null	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
+@@ -1,3 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+Index: .idea/SeaBattle.iml
+===================================================================
+diff --git a/.idea/SeaBattle.iml b/.idea/SeaBattle.iml
+deleted file mode 100644
+--- a/.idea/SeaBattle.iml	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
++++ /dev/null	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<module type="PYTHON_MODULE" version="4">
+-  <component name="NewModuleRootManager">
+-    <content url="file://$MODULE_DIR$">
+-      <excludeFolder url="file://$MODULE_DIR$/venv" />
+-    </content>
+-    <orderEntry type="inheritedJdk" />
+-    <orderEntry type="sourceFolder" forTests="false" />
+-  </component>
+-</module>
+\ No newline at end of file
+Index: .idea/GitHub.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/GitHub.iml b/.idea/GitHub.iml
+new file mode 100644
+--- /dev/null	(date 1670823878900)
++++ b/.idea/GitHub.iml	(date 1670823878900)
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="PYTHON_MODULE" version="4">
++  <component name="NewModuleRootManager">
++    <content url="file://$MODULE_DIR$">
++      <excludeFolder url="file://$MODULE_DIR$/venv" />
++    </content>
++    <orderEntry type="inheritedJdk" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++</module>
+\ No newline at end of file
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectModuleManager\">\r\n    <modules>\r\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/SeaBattle.iml\" filepath=\"$PROJECT_DIR$/.idea/SeaBattle.iml\" />\r\n    </modules>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+--- a/.idea/modules.xml	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
++++ b/.idea/modules.xml	(date 1670823878940)
+@@ -2,7 +2,7 @@
+ <project version="4">
+   <component name="ProjectModuleManager">
+     <modules>
+-      <module fileurl="file://$PROJECT_DIR$/.idea/SeaBattle.iml" filepath="$PROJECT_DIR$/.idea/SeaBattle.iml" />
++      <module fileurl="file://$PROJECT_DIR$/.idea/GitHub.iml" filepath="$PROJECT_DIR$/.idea/GitHub.iml" />
+     </modules>
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.11 (SeaBattle)\" project-jdk-type=\"Python SDK\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 90f8ac2c7733f67b19ec6af088d785e07b842d2e)
++++ b/.idea/misc.xml	(date 1670823878968)
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (SeaBattle)" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (GitHub)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
