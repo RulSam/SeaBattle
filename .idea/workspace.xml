@@ -38,6 +38,14 @@
       <option name="presentableId" value="Default" />
       <updated>1670823764541</updated>
     </task>
+    <task id="LOCAL-00001" summary="Inf file added">
+      <created>1670906952647</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1670906952647</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -50,5 +58,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="player added" />
+    <MESSAGE value="Inf file added" />
+    <option name="LAST_COMMIT_MESSAGE" value="Inf file added" />
   </component>
 </project>
